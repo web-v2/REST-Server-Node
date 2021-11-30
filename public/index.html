@@ -4,9 +4,59 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso denegado</title>
+    <title>Google Sing In</title>
 </head>
 <body>
-    <h1>Acceso Denegado</h1>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <h1>Google Sing-In</h1>
+    <hr>
+    <div id="g_id_onload"
+         data-client_id="448996714239-7phru5shtddjvftjuu1d3de332b9fnke.apps.googleusercontent.com"         
+         data-auto_prompt="false"
+         data-callback="handleCredentialResponse">
+      </div>
+      <div class="g_id_signin"
+         data-type="standard"
+         data-size="large"
+         data-theme="outline"
+         data-text="sign_in_with"
+         data-shape="rectangular"
+         data-logo_alignment="left">
+      </div>
+      <button id="google_singout">Cerrar Sesión</button>
+      <script>
+        function handleCredentialResponse(response) {
+           // Google Token - id_token.                
+           //console.log("id_token: ", response.credential);
+           const body = {id_token: response.credential};
+
+           fetch('http://localhost:8080/api/auth/google',{
+              method: 'POST',
+              headers: {
+                 'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(body)
+           })
+           .then(resp => resp.json())
+           .then(resp => {
+              console.log(resp);
+              localStorage.setItem('correo', resp.usuario.correo);
+           }).catch(err => console.log(err));
+
+        }
+
+        const btn = document.getElementById('google_singout');
+        btn.onclick = () => {
+         console.log(google.accounts.id);
+         google.accounts.id.disableAutoSelect();
+
+         google.accounts.id.revoke(localStorage.getItem('correo'), done => {
+            localStorage.clear();
+            location.reload();
+         });
+        };
+
+
+      </script>      
 </body>
 </html>
